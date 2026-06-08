@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}FD | FinTrack India{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <p>Fixed deposits</p>
+    <h1>FD Tracker</h1>
+</section>
+
+<section class="form-panel">
+    <form method="post" class="entry-form">
+        <label>Bank Name<input type="text" name="bank_name" required></label>
+        <label>Principal Amount<input type="number" name="principal_amount" min="0" step="0.01" required></label>
+        <label>Interest Rate %<input type="number" name="interest_rate" min="0" step="0.01" required></label>
+        <label>Start Date<input type="date" name="start_date" required></label>
+        <label>Maturity Date<input type="date" name="maturity_date" required></label>
+        <label>Maturity Amount<input type="number" name="maturity_amount" min="0" step="0.01" required></label>
+        <label class="span-2">Notes<input type="text" name="notes"></label>
+        <button type="submit">Add FD</button>
+    </form>
+</section>
+
+<section class="table-panel">
+    <table>
+        <thead>
+            <tr>
+                <th>Bank</th>
+                <th>Principal</th>
+                <th>Rate</th>
+                <th>Start</th>
+                <th>Maturity</th>
+                <th>Maturity Amount</th>
+                <th>Notes</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in entries %}
+            <tr>
+                <td>{{ entry.bank_name }}</td>
+                <td>&#8377;{{ entry.principal_amount }}</td>
+                <td>{{ entry.interest_rate }}%</td>
+                <td>{{ entry.start_date }}</td>
+                <td>{{ entry.maturity_date }}</td>
+                <td>&#8377;{{ entry.maturity_amount }}</td>
+                <td>{{ entry.notes }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('main.delete_fd', row_id=entry.id) }}">
+                        <button class="danger" type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8" class="empty">No FD entries yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

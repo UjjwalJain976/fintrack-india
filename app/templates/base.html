@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}FinTrack India{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="site-header">
+        <nav class="nav">
+            <a class="brand" href="{{ url_for('main.dashboard') }}">FinTrack India</a>
+            <div class="nav-links">
+                <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('main.income') }}">Income</a>
+                <a href="{{ url_for('main.expenses') }}">Expenses</a>
+                <a href="{{ url_for('main.fd') }}">FD</a>
+                <a href="{{ url_for('main.sip') }}">SIP</a>
+                <a href="{{ url_for('main.goals') }}">Goals</a>
+            </div>
+        </nav>
+    </header>
+    <main class="page">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

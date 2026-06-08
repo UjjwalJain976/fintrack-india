@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}SIP | FinTrack India{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <p>Mutual fund SIPs</p>
+    <h1>SIP Tracker</h1>
+</section>
+
+<section class="form-panel">
+    <form method="post" class="entry-form">
+        <label>Fund Name<input type="text" name="fund_name" required></label>
+        <label>Monthly Amount<input type="number" name="monthly_amount" min="0" step="0.01" required></label>
+        <label>Start Date<input type="date" name="start_date" required></label>
+        <label>Category<input type="text" name="category" required></label>
+        <label>Current Value<input type="number" name="current_value" min="0" step="0.01" required></label>
+        <label class="span-2">Notes<input type="text" name="notes"></label>
+        <button type="submit">Add SIP</button>
+    </form>
+</section>
+
+<section class="table-panel">
+    <table>
+        <thead>
+            <tr>
+                <th>Fund</th>
+                <th>Monthly Amount</th>
+                <th>Start Date</th>
+                <th>Category</th>
+                <th>Current Value</th>
+                <th>Notes</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in entries %}
+            <tr>
+                <td>{{ entry.fund_name }}</td>
+                <td>&#8377;{{ entry.monthly_amount }}</td>
+                <td>{{ entry.start_date }}</td>
+                <td>{{ entry.category }}</td>
+                <td>&#8377;{{ entry.current_value }}</td>
+                <td>{{ entry.notes }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('main.delete_sip', row_id=entry.id) }}">
+                        <button class="danger" type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="empty">No SIP entries yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

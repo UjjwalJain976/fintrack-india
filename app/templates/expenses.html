@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Expenses | FinTrack India{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <p>Spending record</p>
+    <h1>Expense Tracker</h1>
+</section>
+
+<section class="form-panel">
+    <form method="post" class="entry-form">
+        <label>Category
+            <select name="category" required>
+                {% for category in categories %}
+                <option value="{{ category }}">{{ category }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Amount<input type="number" name="amount" min="0" step="0.01" required></label>
+        <label>Date<input type="date" name="date" required></label>
+        <label>Payment Mode<input type="text" name="payment_mode" required></label>
+        <label class="span-2">Notes<input type="text" name="notes"></label>
+        <button type="submit">Add Expense</button>
+    </form>
+</section>
+
+<section class="table-panel">
+    <table>
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Payment Mode</th>
+                <th>Notes</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in entries %}
+            <tr>
+                <td>{{ entry.category }}</td>
+                <td>&#8377;{{ entry.amount }}</td>
+                <td>{{ entry.expense_date }}</td>
+                <td>{{ entry.payment_mode }}</td>
+                <td>{{ entry.notes }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('main.delete_expense', row_id=entry.id) }}">
+                        <button class="danger" type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="empty">No expense entries yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
