@@ -82,12 +82,18 @@ http://127.0.0.1:5000
 - Goals tracker with add, list, and delete
 - Supabase PostgreSQL persistence
 
-## Production
+## Render Deployment
 
-Use this command for production deployment:
+Build command:
 
 ```bash
-gunicorn app:app
+pip install -r requirements.txt
+```
+
+Start command:
+
+```bash
+gunicorn wsgi:app
 ```
 
 ## Future Plan
