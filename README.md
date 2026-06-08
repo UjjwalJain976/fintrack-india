@@ -84,6 +84,8 @@ http://127.0.0.1:5000
 
 ## Render Deployment
 
+The app is deployed on Render and uses Supabase PostgreSQL for persistent storage.
+
 Build command:
 
 ```bash
