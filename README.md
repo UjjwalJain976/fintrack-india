@@ -75,6 +75,7 @@ http://127.0.0.1:5000
 ## Features Completed
 
 - Dashboard with income, expenses, savings, investments, goals, and financial health score
+- Month-wise financial dashboard with charts and recent transactions
 - Income tracker with add, list, and delete
 - Expense tracker with add, list, category, payment mode, and delete
 - FD tracker with add, list, and delete
@@ -83,6 +84,8 @@ http://127.0.0.1:5000
 - Supabase PostgreSQL persistence
 
 ## Render Deployment
+
+The app is deployed on Render and uses Supabase PostgreSQL for persistent storage.
 
 Build command:
 

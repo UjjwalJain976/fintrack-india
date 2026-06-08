@@ -1,10 +1,12 @@
+from calendar import month_name, monthrange
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
 from flask import Blueprint, redirect, render_template, request, url_for
+from sqlalchemy import func
 
 from app import db
-from app.finance_utils import currency, dashboard_summary
+from app.finance_utils import currency, dashboard_summary, to_float
 from app.models import Expense, FDAccount, Goal, Income, SIPInvestment
 
 
@@ -43,11 +45,96 @@ def delete_record(model, row_id):
         db.session.commit()
 
 
+def parse_int(value, fallback):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return fallback
+
+
+def selected_month_range(month, year):
+    last_day = monthrange(year, month)[1]
+    return date(year, month, 1), date(year, month, last_day)
+
+
+def dashboard_year_options(selected_year, current_year):
+    years = list(range(current_year - 5, current_year + 2))
+    if selected_year not in years:
+        years.append(selected_year)
+    return sorted(years, reverse=True)
+
+
 @main.route("/")
 def dashboard():
+    today = date.today()
+    selected_month = parse_int(request.args.get("month"), today.month)
+    selected_year = parse_int(request.args.get("year"), today.year)
+
+    if selected_month < 1 or selected_month > 12:
+        selected_month = today.month
+    if selected_year < 2000 or selected_year > today.year + 10:
+        selected_year = today.year
+
+    start_date, end_date = selected_month_range(selected_month, selected_year)
+
+    category_totals = (
+        db.session.query(
+            Expense.category,
+            func.coalesce(func.sum(Expense.amount), 0).label("total"),
+        )
+        .filter(
+            Expense.expense_date >= start_date,
+            Expense.expense_date <= end_date,
+        )
+        .group_by(Expense.category)
+        .order_by(func.coalesce(func.sum(Expense.amount), 0).desc())
+        .all()
+    )
+    recent_income = (
+        Income.query.filter(
+            Income.income_date >= start_date,
+            Income.income_date <= end_date,
+        )
+        .order_by(Income.income_date.desc(), Income.created_at.desc(), Income.id.desc())
+        .limit(5)
+        .all()
+    )
+    recent_expenses = (
+        Expense.query.filter(
+            Expense.expense_date >= start_date,
+            Expense.expense_date <= end_date,
+        )
+        .order_by(
+            Expense.expense_date.desc(),
+            Expense.created_at.desc(),
+            Expense.id.desc(),
+        )
+        .limit(5)
+        .all()
+    )
+
+    summary = dashboard_summary(start_date=start_date, end_date=end_date)
+    income_expense_chart = {
+        "labels": ["Income", "Expenses"],
+        "values": [summary["monthly_income"], summary["monthly_expenses"]],
+    }
+    category_chart = {
+        "labels": [category for category, _total in category_totals],
+        "values": [to_float(total) for _category, total in category_totals],
+    }
+
     return render_template(
         "dashboard.html",
-        summary=dashboard_summary(),
+        summary=summary,
+        selected_month=selected_month,
+        selected_month_name=month_name[selected_month],
+        selected_year=selected_year,
+        month_options=[(month, month_name[month]) for month in range(1, 13)],
+        year_options=dashboard_year_options(selected_year, today.year),
+        income_expense_chart=income_expense_chart,
+        category_chart=category_chart,
+        recent_income=recent_income,
+        recent_expenses=recent_expenses,
         currency=currency,
     )
 
