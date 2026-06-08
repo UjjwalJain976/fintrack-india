@@ -101,7 +101,8 @@ body {
 
 .metric-card,
 .form-panel,
-.table-panel {
+.table-panel,
+.chart-panel {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -131,6 +132,82 @@ body {
 
 .score-card strong {
     color: var(--accent-dark);
+}
+
+.dashboard-heading {
+    align-items: end;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.filter-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    display: grid;
+    grid-template-columns: minmax(140px, 1fr) minmax(110px, 0.8fr) auto;
+    gap: 12px;
+    align-items: end;
+    padding: 16px;
+}
+
+.monthly-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.investment-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 16px;
+}
+
+.analytics-grid,
+.recent-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.chart-panel {
+    padding: 20px;
+}
+
+.panel-heading {
+    margin-bottom: 16px;
+}
+
+.panel-heading p {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.panel-heading h2 {
+    color: var(--text);
+    font-size: 1.18rem;
+    margin: 5px 0 0;
+}
+
+.chart-box {
+    height: 310px;
+    position: relative;
+}
+
+.recent-panel {
+    overflow-x: auto;
+}
+
+.table-heading {
+    padding: 18px 18px 0;
+}
+
+.recent-panel table {
+    min-width: 520px;
 }
 
 .form-panel {
@@ -256,9 +333,21 @@ td form {
 }
 
 @media (max-width: 900px) {
+    .dashboard-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
     .dashboard-grid,
+    .monthly-grid,
+    .investment-grid,
     .entry-form {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .analytics-grid,
+    .recent-grid {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -274,8 +363,15 @@ td form {
     }
 
     .dashboard-grid,
-    .entry-form {
+    .monthly-grid,
+    .investment-grid,
+    .entry-form,
+    .filter-form {
         grid-template-columns: 1fr;
+    }
+
+    .chart-box {
+        height: 260px;
     }
 
     .span-2 {

@@ -3,19 +3,38 @@
 {% block title %}Dashboard | FinTrack India{% endblock %}
 
 {% block content %}
-<section class="page-heading">
-    <p>Personal finance tracker</p>
-    <h1>Welcome to FinTrack India</h1>
+<section class="page-heading dashboard-heading">
+    <div>
+        <p>Personal finance tracker</p>
+        <h1>{{ selected_month_name }} {{ selected_year }} Dashboard</h1>
+    </div>
+    <form method="get" class="filter-form" aria-label="Dashboard month filter">
+        <label>Month
+            <select name="month">
+                {% for month_value, month_label in month_options %}
+                <option value="{{ month_value }}" {% if month_value == selected_month %}selected{% endif %}>{{ month_label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Year
+            <select name="year">
+                {% for year_value in year_options %}
+                <option value="{{ year_value }}" {% if year_value == selected_year %}selected{% endif %}>{{ year_value }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button type="submit">Apply Filter</button>
+    </form>
 </section>
 
-<section class="dashboard-grid">
+<section class="dashboard-grid monthly-grid" aria-label="Monthly dashboard metrics">
     <article class="metric-card">
-        <span>Total Income</span>
-        <strong>&#8377;{{ currency(summary.total_income) }}</strong>
+        <span>Monthly Income</span>
+        <strong>&#8377;{{ currency(summary.monthly_income) }}</strong>
     </article>
     <article class="metric-card">
-        <span>Total Expenses</span>
-        <strong>&#8377;{{ currency(summary.total_expenses) }}</strong>
+        <span>Monthly Expenses</span>
+        <strong>&#8377;{{ currency(summary.monthly_expenses) }}</strong>
     </article>
     <article class="metric-card">
         <span>Monthly Savings</span>
@@ -25,21 +44,149 @@
         <span>Savings Rate</span>
         <strong>{{ "%.1f"|format(summary.savings_rate) }}%</strong>
     </article>
-    <article class="metric-card">
-        <span>Total FD Amount</span>
-        <strong>&#8377;{{ currency(summary.total_fd) }}</strong>
-    </article>
-    <article class="metric-card">
-        <span>Total SIP Monthly Amount</span>
-        <strong>&#8377;{{ currency(summary.total_sip) }}</strong>
-    </article>
-    <article class="metric-card">
-        <span>Total Goal Target</span>
-        <strong>&#8377;{{ currency(summary.total_goal_target) }}</strong>
-    </article>
     <article class="metric-card score-card">
         <span>Financial Health Score</span>
         <strong>{{ summary.health_score }}/100</strong>
     </article>
 </section>
+
+<section class="dashboard-grid investment-grid" aria-label="All-time investment totals">
+    <article class="metric-card">
+        <span>All-time FD Principal</span>
+        <strong>&#8377;{{ currency(summary.total_fd) }}</strong>
+    </article>
+    <article class="metric-card">
+        <span>All-time SIP Monthly Amount</span>
+        <strong>&#8377;{{ currency(summary.total_sip) }}</strong>
+    </article>
+    <article class="metric-card">
+        <span>All-time Goal Target</span>
+        <strong>&#8377;{{ currency(summary.total_goal_target) }}</strong>
+    </article>
+</section>
+
+<section class="analytics-grid" aria-label="Dashboard charts">
+    <article class="chart-panel">
+        <div class="panel-heading">
+            <p>Monthly comparison</p>
+            <h2>Income vs Expenses</h2>
+        </div>
+        <div class="chart-box">
+            <canvas id="incomeExpenseChart"></canvas>
+        </div>
+    </article>
+    <article class="chart-panel">
+        <div class="panel-heading">
+            <p>Spending mix</p>
+            <h2>Expense by Category</h2>
+        </div>
+        <div class="chart-box">
+            <canvas id="categoryExpenseChart"></canvas>
+        </div>
+    </article>
+</section>
+
+<section class="recent-grid" aria-label="Recent monthly transactions">
+    <article class="table-panel recent-panel">
+        <div class="panel-heading table-heading">
+            <p>Latest inflows</p>
+            <h2>Recent Income</h2>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Source</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in recent_income %}
+                <tr>
+                    <td>{{ entry.source }}</td>
+                    <td>&#8377;{{ currency(entry.amount) }}</td>
+                    <td>{{ entry.income_date }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="empty">No income entries for this month.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+    <article class="table-panel recent-panel">
+        <div class="panel-heading table-heading">
+            <p>Latest outflows</p>
+            <h2>Recent Expenses</h2>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in recent_expenses %}
+                <tr>
+                    <td>{{ entry.category }}</td>
+                    <td>&#8377;{{ currency(entry.amount) }}</td>
+                    <td>{{ entry.expense_date }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="empty">No expense entries for this month.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const incomeExpenseData = {{ income_expense_chart|tojson }};
+    const categoryData = {{ category_chart|tojson }};
+    const chartColors = ["#0f766e", "#f97316", "#2563eb", "#7c3aed", "#db2777", "#ca8a04", "#059669", "#dc2626"];
+
+    new Chart(document.getElementById("incomeExpenseChart"), {
+        type: "bar",
+        data: {
+            labels: incomeExpenseData.labels,
+            datasets: [{
+                label: "Amount",
+                data: incomeExpenseData.values,
+                backgroundColor: ["#0f766e", "#f97316"],
+                borderRadius: 8,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+            },
+            scales: {
+                y: { beginAtZero: true },
+            },
+        },
+    });
+
+    new Chart(document.getElementById("categoryExpenseChart"), {
+        type: "doughnut",
+        data: {
+            labels: categoryData.labels.length ? categoryData.labels : ["No expenses"],
+            datasets: [{
+                data: categoryData.values.length ? categoryData.values : [1],
+                backgroundColor: categoryData.values.length ? chartColors : ["#dbe3ef"],
+                borderWidth: 0,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: "bottom" },
+            },
+        },
+    });
+</script>
 {% endblock %}
